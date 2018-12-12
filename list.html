@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="main.css" />
+		
+		<script src="jquery.min.js"></script>
+		<script src="cookie.js"></script>
+		<style>
+			.header{
+				height: 40px;
+				width: 900px;
+				margin: 0 auto 50px;
+			}
+		</style>
+	</head>
+	<body>		 
+		<div class="header">
+			<span id="s"><a href="login.html">登录 / 注册</a></span>
+			<span id="s1">
+			</span>
+		</div>
+		<div class="nav clearfix">
+			<!--<span>小米手机</span>-->
+		</div>		
+		<ul class="shoplist clearfix">
+			<!--<li>
+				<a href="page.html">
+					<img src="img/1.jpg" alt="" />
+					<p>小米1</p>
+					<p>890</p>
+				</a>
+				<button>加入购物车</button>
+			</li>-->
+		</ul>	
+	</body>
+</html>
+<script src="jquery.min.js"></script>
+<script src="cookie.js"></script>
+<script type="text/javascript">
+	//1、页面加载请求服务器数据
+    window.onload = function () {
+        $.ajax({
+            type :"get",
+            url :"data.json",
+            cache : false,
+            success : function (res) {
+               console.log(res)
+                var title = "";
+                var str = "";
+               for(var key in res){
+                   title+= `<span classify=${key}>${res[key].name}</span>`;
+                   for(var i = 0; i < res[key].list.length;i++){
+                       var cur = res[key].list[i];
+                       //console.log(cur)
+                       str += `<li>
+                            <a href="page.html?classify=${key}&id=${cur.id}">
+                                <img src="img/${cur.src}" alt="" />
+                                <p>${cur.name}</p>
+                                <p>${cur.price}</p>
+                            </a>
+                            <button pid=${cur.id} name=${cur.name} src=${cur.src} price=${cur.price}>加入购物车</button>
+                        </li>`;
+                   }
+               }
+                $(".nav").html(title);
+                $(".shoplist").html(str);
+                $(".nav span").mouseover(function () {
+                    var classify = $(this).attr("classify");
+                   // console.log(classify);
+                    var arr = res[classify].list;
+                    var str1 = "";
+                   for(var i = 0; i < arr.length; i++){
+                       var cur1 = arr[i];
+                     str1 += `<li>
+                        <a href="page.html?classify=${classify}&id=${cur1.id}">
+                            <img src="img/${cur1.src}" alt="" />
+                            <p>${cur1.name}</p>
+                            <p>${cur1.price}</p>
+                        </a>
+                        <button pid=${cur1.id} name=${cur1.name} price=${cur1.price} src=${cur1.src}>加入购物车</button>
+                    </li>`;
+                   }
+                   $(".shoplist").html(str1);
+                })
+            }
+        })
+        var arr = [];
+        //加入购物车 我要把 商品 id 商品的名字   商品的价格   商品的 src 先放在对象里，最后push到数组里   存到cookie 
+        // [{id,name,price,count},{},{}]  存到cookie里
+        $(".shoplist").on('click','button',function(){
+        	obj = { // 我将要加入购物的车商品信息
+        		id : $(this).attr("pid"),
+        		name : $(this).attr("name"),
+        		price : $(this).attr("price"),
+        		src : $(this).attr("src"),
+        		count : 1
+        	}        	
+        	var flag = true;
+        	var shopList = getCookie("shopList");
+        	if(shopList.length != 0){//说明cookie里面有东西
+        		arr = shopList;
+        		for(var i = 0; i < arr.length; i++){
+        			if(arr[i].id == obj.id){ // cookie里有此商品；我只需要让count++
+        				flag = false;
+        				arr[i].count++;       				
+        			}
+        		}
+        	}
+        	if(flag){
+        		arr.push(obj)
+        	}	        	
+        	setCookie("shopList",JSON.stringify(arr)); // cookie值一定是个字符串
+        	// 跳到结算页面
+        	
+        	if(!confirm("确定-继续购物，取消-去购物车结算")){
+        		window.location.href = "shopcar.html"
+        	}
+        })
+        
+        
+        
+    }
+</script>
